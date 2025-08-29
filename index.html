@@ -1,274 +1,118 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>موقعي - حلقات</title>
+  <meta charset="UTF-8">
+  <title>📺 مكتبتي</title>
   <style>
-    :root{
-      --bg:#0f0f0f; --card:#111; --muted:#aaa; --border:#222; --accent:#1f7;
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family: "Noto Sans Arabic", system-ui, Arial; background:var(--bg); color:#eee; -webkit-font-smoothing:antialiased;}
-    .top{position:sticky;top:0;background:var(--bg);border-bottom:1px solid var(--border);z-index:10;padding:12px}
-    .container{max-width:1100px;margin:0 auto;padding:12px}
-    .row{display:flex;gap:12px;align-items:center}
-    .brand{font-weight:700;padding:6px 12px;border-radius:10px;background:#0b0b0b;border:1px solid var(--border)}
-    input[type=search]{flex:1;padding:10px;border-radius:999px;border:1px solid var(--border);background:#0b0b0b;color:#eee}
-    nav a{color:var(--muted);text-decoration:none;padding:6px 10px;border-radius:8px}
-    nav a.active{color:#fff;background:#141414}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:16px}
-    .card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
-    .thumb{width:100%;aspect-ratio:16/9;object-fit:cover;background:#222}
-    .title{padding:10px 12px;font-weight:700;font-size:15px}
-    .desc{padding:0 12px 12px;color:var(--muted);font-size:13px;flex:0}
-    .player-wrap{background:#000;border-radius:12px;padding:12px;border:1px solid var(--border);margin-bottom:12px}
-    video.player{width:100%;height:auto;border-radius:8px;background:#000}
-    .actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
-    .btn{background:#111;border:1px solid var(--border);padding:8px 12px;border-radius:10px;cursor:pointer;color:#eee}
-    .pill{padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:#0b0b0b}
-    .muted{color:var(--muted);font-size:13px}
-    .empty{padding:20px;color:var(--muted)}
-    /* modal */
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px;z-index:50}
-    .modal .box{width:100%;max-width:920px;background:#0b0b0b;padding:14px;border-radius:12px;border:1px solid var(--border)}
-    .controls{display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:8px}
-    footer{padding:20px;text-align:center;color:var(--muted)}
-    @media (max-width:600px){ .grid{grid-template-columns:repeat(2,1fr)} }
+    body { margin:0; font-family:Arial, sans-serif; background:#f9f9f9; }
+    header { background:#202020; color:white; display:flex; align-items:center; padding:10px 20px; }
+    header h1 { flex:1; margin:0; font-size:20px; color:#ff0000; }
+    header input { width:300px; padding:6px; border:none; border-radius:2px; }
+
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:16px; padding:20px; }
+    .card { background:white; border-radius:6px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.15); cursor:pointer; transition:transform .2s; }
+    .card:hover { transform:scale(1.03); }
+    .thumb { width:100%; height:140px; object-fit:cover; background:#000; }
+    .info { padding:10px; }
+    .info h3 { font-size:16px; margin:0 0 6px; color:#111; }
+    .info p { font-size:13px; color:#555; margin:0; max-height:36px; overflow:hidden; }
+
+    .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); align-items:center; justify-content:center; z-index:999; }
+    .modal-content { background:#181818; width:90%; max-width:900px; border-radius:8px; overflow:hidden; color:white; }
+    .player-box { background:#000; }
+    iframe, video.player { width:100%; height:500px; display:block; }
+    .details { padding:15px; }
+    .details h2 { margin:0 0 10px; font-size:20px; }
+    .details p { margin:0; font-size:14px; color:#ccc; }
+    .close { position:absolute; top:20px; left:20px; font-size:26px; color:white; cursor:pointer; }
   </style>
 </head>
 <body>
-  <header class="top">
-    <div class="container row" style="justify-content:space-between">
-      <div class="row" style="gap:10px">
-        <div class="brand">موقعي</div>
-        <input id="search" type="search" placeholder="ابحث عن حلقة..." />
-        <nav>
-          <a href="#" id="nav-home" class="active">الرئيسية</a>
-          <a href="#" id="nav-watchlater">مشاهدة لاحقًا</a>
-        </nav>
-      </div>
-      <div class="row">
-        <div class="pill muted">أنت فقط من يحرر الحلقات عبر videos.json</div>
-      </div>
-    </div>
+  <header>
+    <h1>📺 مكتبتي</h1>
+    <input type="text" id="searchBox" placeholder="ابحث عن حلقة...">
   </header>
 
-  <main class="container" id="app">
-    <!-- Home / Grid -->
-    <section id="home-section">
-      <div id="results" class="muted" style="margin-top:6px">تحميل...</div>
-      <div id="grid" class="grid" aria-live="polite"></div>
-      <div id="empty" class="empty" style="display:none">لا توجد حلقات لعرضها.</div>
-    </section>
+  <div class="grid" id="videoGrid"></div>
 
-    <!-- Watch Later -->
-    <section id="wl-section" style="display:none">
-      <h2>قائمة المشاهدة لاحقًا</h2>
-      <div id="wl-grid" class="grid"></div>
-      <div id="wl-empty" class="empty" style="display:none">قائمة المشاهدة لاحقًا فارغة.</div>
-    </section>
-
-    <!-- Player modal -->
-    <div id="player-modal" class="modal" style="display:none">
-      <div class="box">
-        <div id="player-container"></div>
-        <div class="controls">
-          <div id="player-title" style="font-weight:700"></div>
-          <div style="display:flex;gap:8px">
-            <button class="btn" id="like-btn">إعجاب</button>
-            <button class="btn" id="wl-btn">شاهد لاحقًا</button>
-            <button class="btn" id="close-btn">إغلاق</button>
-          </div>
-        </div>
-        <p id="player-desc" class="muted" style="margin-top:8px"></p>
+  <div class="modal" id="playerModal">
+    <div class="modal-content">
+      <span class="close" onclick="closePlayer()">✖</span>
+      <div class="player-box" id="playerContainer"></div>
+      <div class="details">
+        <h2 id="playerTitle"></h2>
+        <p id="playerDesc"></p>
       </div>
     </div>
-
-    <footer>صُنِع بواسطة (خاص) — لتعديل الحلقات، عدّل ملف <code>videos.json</code> في الريبو</footer>
-  </main>
+  </div>
 
 <script>
-/*
-  Simple static video site
-  - videos are read from ./videos.json
-  - likes & watch-later stored locally (per visitor) via localStorage
-  - To add/remove episodes: edit videos.json in the repo and redeploy
-*/
+let videos = [], filtered = [];
 
-const state = {
-  videos: [],
-  likes: JSON.parse(localStorage.getItem('likes_v1') || '{}'),
-  watchLater: JSON.parse(localStorage.getItem('wl_v1') || '{}'),
-  current: null
-};
-
-const el = id => document.getElementById(id);
-const grid = el('grid');
-const results = el('results');
-const empty = el('empty');
-
-const wlGrid = el('wl-grid');
-const wlEmpty = el('wl-empty');
-
-const playerModal = el('player-modal');
-const playerContainer = el('player-container');
-const playerTitle = el('player-title');
-const playerDesc = el('player-desc');
-const likeBtn = el('like-btn');
-const wlBtn = el('wl-btn');
-const closeBtn = el('close-btn');
-
-function loadVideos(){
-  fetch('videos.json', {cache: "no-store"})
-    .then(r => r.json())
-    .then(data => {
-      state.videos = Array.isArray(data.items) ? data.items : [];
-      renderGrid();
-      results.textContent = 'النتائج: ' + state.videos.length;
-    })
-    .catch(err => {
-      console.error(err);
-      results.textContent = 'فشل تحميل videos.json — تأكد أنه موجود في نفس المجلد.';
-      grid.innerHTML = '';
-    });
-}
-
-function renderGrid(q=''){
-  const ql = q.trim().toLowerCase();
-  const items = state.videos.filter(v => {
-    if(!ql) return true;
-    return (v.title||'').toLowerCase().includes(ql) || (v.description||'').toLowerCase().includes(ql);
+// تحميل البيانات من ملف JSON
+fetch('videos.json')
+  .then(res => res.json())
+  .then(data => {
+    videos = data.items || [];
+    filtered = videos;
+    renderGrid();
   });
+
+function renderGrid(){
+  const grid = document.getElementById('videoGrid');
   grid.innerHTML = '';
-  if(items.length === 0){ empty.style.display = 'block'; } else { empty.style.display = 'none'; }
-  for(const v of items){
-    const card = document.createElement('a');
-    card.href = '#';
+  filtered.forEach(v=>{
+    const card = document.createElement('div');
     card.className = 'card';
-    card.onclick = (e) => { e.preventDefault(); openPlayer(v.id); };
-    const img = document.createElement('img');
-    img.className = 'thumb';
-    img.src = v.thumbnailUrl || ('https://placehold.co/640x360?text=' + encodeURIComponent(v.title || 'حلقة'));
-    img.alt = v.title || '';
-    const title = document.createElement('div');
-    title.className = 'title';
-    title.textContent = v.title || 'بدون عنوان';
-    const desc = document.createElement('div');
-    desc.className = 'desc';
-    desc.textContent = v.description || '';
-    card.appendChild(img);
-    card.appendChild(title);
-    card.appendChild(desc);
+    card.innerHTML = `
+      <img class="thumb" src="${v.thumbnailUrl}" alt="">
+      <div class="info">
+        <h3>${v.title}</h3>
+        <p>${v.description}</p>
+      </div>
+    `;
+    card.onclick = ()=>openPlayer(v.id);
     grid.appendChild(card);
-  }
+  });
 }
 
 function openPlayer(id){
-  const video = state.videos.find(x => x.id === id);
+  const video = videos.find(x=>x.id===id);
   if(!video) return;
-  state.current = video;
-  playerTitle.textContent = video.title || '';
-  playerDesc.textContent = video.description || '';
-  playerContainer.innerHTML = '';
-  const vid = document.createElement('video');
-  vid.className = 'player';
-  vid.controls = true;
-  vid.src = video.videoUrl;
-  vid.poster = video.thumbnailUrl || '';
-  vid.setAttribute('playsinline','');
-  playerContainer.appendChild(vid);
+  document.getElementById('playerTitle').textContent = video.title;
+  document.getElementById('playerDesc').textContent = video.description || '';
+  const container = document.getElementById('playerContainer');
+  container.innerHTML = '';
 
-  // like/watchlater labels
-  likeBtn.textContent = (state.likes[id] ? 'إلغاء الإعجاب' : 'إعجاب');
-  wlBtn.textContent = (state.watchLater[id] ? 'إزالة من لاحقًا' : 'شاهد لاحقًا');
-
-  playerModal.style.display = 'flex';
-  // autoplay attempt
-  vid.play().catch(()=>{ /* muted autoplay blocked */ });
+  if(video.videoUrl.includes("drive.google.com") && video.videoUrl.includes("/preview")){
+    const iframe = document.createElement('iframe');
+    iframe.src = video.videoUrl;
+    iframe.allow = "autoplay";
+    iframe.frameBorder = "0";
+    container.appendChild(iframe);
+  } else {
+    const vid = document.createElement('video');
+    vid.className = 'player';
+    vid.controls = true;
+    vid.src = video.videoUrl;
+    vid.poster = video.thumbnailUrl || '';
+    container.appendChild(vid);
+    vid.play().catch(()=>{});
+  }
+  document.getElementById('playerModal').style.display='flex';
 }
 
 function closePlayer(){
-  playerModal.style.display = 'none';
-  playerContainer.innerHTML = '';
-  state.current = null;
+  document.getElementById('playerModal').style.display='none';
+  document.getElementById('playerContainer').innerHTML = '';
 }
 
-likeBtn.addEventListener('click', () => {
-  if(!state.current) return;
-  const id = state.current.id;
-  state.likes[id] = !state.likes[id];
-  localStorage.setItem('likes_v1', JSON.stringify(state.likes));
-  likeBtn.textContent = (state.likes[id] ? 'إلغاء الإعجاب' : 'إعجاب');
-  renderGrid(); renderWatchLater(); // re-render small indicators if used later
+// البحث
+document.getElementById('searchBox').addEventListener('input', e=>{
+  const q = e.target.value.toLowerCase();
+  filtered = videos.filter(v => v.title.toLowerCase().includes(q) || (v.description||'').toLowerCase().includes(q));
+  renderGrid();
 });
-
-wlBtn.addEventListener('click', () => {
-  if(!state.current) return;
-  const id = state.current.id;
-  state.watchLater[id] = !state.watchLater[id];
-  localStorage.setItem('wl_v1', JSON.stringify(state.watchLater));
-  wlBtn.textContent = (state.watchLater[id] ? 'إزالة من لاحقًا' : 'شاهد لاحقًا');
-  renderWatchLater();
-});
-
-closeBtn.addEventListener('click', closePlayer);
-playerModal.addEventListener('click', (e) => { if(e.target === playerModal) closePlayer(); });
-
-/* Watch Later rendering */
-function renderWatchLater(){
-  const ids = Object.keys(state.watchLater).filter(k => state.watchLater[k]);
-  wlGrid.innerHTML = '';
-  if(ids.length === 0){ wlEmpty.style.display = 'block'; } else { wlEmpty.style.display = 'none'; }
-  const items = ids.map(id => state.videos.find(v=>v.id===id)).filter(Boolean);
-  for(const v of items){
-    const card = document.createElement('a');
-    card.href = '#';
-    card.className = 'card';
-    card.onclick = (e) => { e.preventDefault(); openPlayer(v.id); };
-    const img = document.createElement('img');
-    img.className = 'thumb';
-    img.src = v.thumbnailUrl || ('https://placehold.co/640x360?text=' + encodeURIComponent(v.title || 'حلقة'));
-    const title = document.createElement('div');
-    title.className = 'title'; title.textContent = v.title || '';
-    const desc = document.createElement('div'); desc.className='desc'; desc.textContent = v.description || '';
-    card.appendChild(img); card.appendChild(title); card.appendChild(desc);
-    wlGrid.appendChild(card);
-  }
-}
-
-/* Navigation & search */
-el('nav-home').addEventListener('click', (e) => {
-  e.preventDefault();
-  showSection('home');
-});
-el('nav-watchlater').addEventListener('click', (e) => {
-  e.preventDefault();
-  showSection('wl');
-  renderWatchLater();
-});
-
-function showSection(name){
-  if(name==='home'){
-    el('home-section').style.display='block';
-    el('wl-section').style.display='none';
-    el('nav-home').classList.add('active'); el('nav-watchlater').classList.remove('active');
-  } else {
-    el('home-section').style.display='none';
-    el('wl-section').style.display='block';
-    el('nav-home').classList.remove('active'); el('nav-watchlater').classList.add('active');
-  }
-}
-
-el('search').addEventListener('input', (e) => {
-  renderGrid(e.target.value);
-});
-
-/* Initial load */
-loadVideos();
-renderWatchLater();
-showSection('home');
-
 </script>
 </body>
 </html>
