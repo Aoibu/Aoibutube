@@ -2,54 +2,35 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>📺 مكتبتي</title>
+  <title>MyTube</title>
   <style>
     body { margin:0; font-family:Arial, sans-serif; background:#f9f9f9; }
-    header { background:#202020; color:white; display:flex; align-items:center; padding:10px 20px; }
-    header h1 { flex:1; margin:0; font-size:20px; color:#ff0000; }
-    header input { width:300px; padding:6px; border:none; border-radius:2px; }
+    header { background:#fff; display:flex; align-items:center; padding:8px 16px;
+             border-bottom:1px solid #ddd; position:sticky; top:0; z-index:10; }
+    header .logo { color:#ff0000; font-weight:bold; font-size:22px; margin-left:20px; }
+    header input { flex:1; max-width:500px; padding:6px 10px; border:1px solid #ccc; border-radius:2px; }
 
-    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:16px; padding:20px; }
-    .card { background:white; border-radius:6px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.15); cursor:pointer; transition:transform .2s; }
-    .card:hover { transform:scale(1.03); }
-    .thumb { width:100%; height:140px; object-fit:cover; background:#000; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; padding:20px; }
+    .card { background:#fff; border-radius:6px; overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.1); cursor:pointer; transition:.2s; }
+    .card:hover { transform:translateY(-3px); }
+    .thumb { width:100%; height:160px; object-fit:cover; background:#000; }
     .info { padding:10px; }
     .info h3 { font-size:16px; margin:0 0 6px; color:#111; }
-    .info p { font-size:13px; color:#555; margin:0; max-height:36px; overflow:hidden; }
-
-    .modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); align-items:center; justify-content:center; z-index:999; }
-    .modal-content { background:#181818; width:90%; max-width:900px; border-radius:8px; overflow:hidden; color:white; }
-    .player-box { background:#000; }
-    iframe, video.player { width:100%; height:500px; display:block; }
-    .details { padding:15px; }
-    .details h2 { margin:0 0 10px; font-size:20px; }
-    .details p { margin:0; font-size:14px; color:#ccc; }
-    .close { position:absolute; top:20px; left:20px; font-size:26px; color:white; cursor:pointer; }
+    .info p { font-size:13px; color:#555; margin:0; max-height:38px; overflow:hidden; }
   </style>
 </head>
 <body>
   <header>
-    <h1>📺 مكتبتي</h1>
-    <input type="text" id="searchBox" placeholder="ابحث عن حلقة...">
+    <div class="logo">▶ MyTube</div>
+    <input type="text" id="searchBox" placeholder="ابحث">
   </header>
 
   <div class="grid" id="videoGrid"></div>
 
-  <div class="modal" id="playerModal">
-    <div class="modal-content">
-      <span class="close" onclick="closePlayer()">✖</span>
-      <div class="player-box" id="playerContainer"></div>
-      <div class="details">
-        <h2 id="playerTitle"></h2>
-        <p id="playerDesc"></p>
-      </div>
-    </div>
-  </div>
-
 <script>
 let videos = [], filtered = [];
 
-// تحميل البيانات من ملف JSON
+// تحميل الفيديوهات من ملف JSON
 fetch('videos.json')
   .then(res => res.json())
   .then(data => {
@@ -71,40 +52,9 @@ function renderGrid(){
         <p>${v.description}</p>
       </div>
     `;
-    card.onclick = ()=>openPlayer(v.id);
+    card.onclick = ()=>{ window.location.href = "watch.html?id="+v.id; };
     grid.appendChild(card);
   });
-}
-
-function openPlayer(id){
-  const video = videos.find(x=>x.id===id);
-  if(!video) return;
-  document.getElementById('playerTitle').textContent = video.title;
-  document.getElementById('playerDesc').textContent = video.description || '';
-  const container = document.getElementById('playerContainer');
-  container.innerHTML = '';
-
-  if(video.videoUrl.includes("drive.google.com") && video.videoUrl.includes("/preview")){
-    const iframe = document.createElement('iframe');
-    iframe.src = video.videoUrl;
-    iframe.allow = "autoplay";
-    iframe.frameBorder = "0";
-    container.appendChild(iframe);
-  } else {
-    const vid = document.createElement('video');
-    vid.className = 'player';
-    vid.controls = true;
-    vid.src = video.videoUrl;
-    vid.poster = video.thumbnailUrl || '';
-    container.appendChild(vid);
-    vid.play().catch(()=>{});
-  }
-  document.getElementById('playerModal').style.display='flex';
-}
-
-function closePlayer(){
-  document.getElementById('playerModal').style.display='none';
-  document.getElementById('playerContainer').innerHTML = '';
 }
 
 // البحث
