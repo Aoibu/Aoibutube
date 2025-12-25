@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>مصروفاتي اليومية</title>
+  <link rel="stylesheet" href="style.css">
+
+  <!-- PDF Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<div class="container">
+  <h1>📒 مصروفاتي</h1>
+
+  <input type="number" id="amount" placeholder="المبلغ">
+  <input type="text" id="note" placeholder="الوصف">
+  <input type="date" id="date">
+
+  <div class="time-box">
+    <label>
+      <input type="radio" name="timeOption" value="now" checked>
+      نفس وقت التسجيل
+    </label>
+
+    <label>
+      <input type="radio" name="timeOption" value="custom">
+      وقت مختلف
+    </label>
+
+    <input type="datetime-local" id="customTime" disabled>
+  </div>
+
+  <button onclick="addExpense()">➕ إضافة</button>
+
+  <h2>المجموع: <span id="total">0</span></h2>
+
+  <ul id="list"></ul>
+
+  <hr>
+
+  <h3>📤 تصدير شهر</h3>
+  <select id="exportMonth"></select>
+  <button onclick="exportPDF()">PDF</button>
+  <button onclick="exportXML()">XML</button>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
